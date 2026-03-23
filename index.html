@@ -111,6 +111,11 @@
                         </div>
                     </div>
                     
+                    <!-- Remote Trigger Button -->
+                    <button onclick="forceRemoteSync()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 transition-colors font-bold text-sm shrink-0 shadow-lg shadow-green-500/10" title="جلب بيانات اللحظة من جميع الأفرع">
+                        <i class="fa-solid fa-bolt"></i> <span class="hidden md:inline">جرد فورّي</span>
+                    </button>
+                    
                     <button onclick="logout()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors shrink-0" title="تسجيل الخروج">
                         <i class="fa-solid fa-power-off"></i>
                     </button>
@@ -213,6 +218,14 @@
             location.reload();
         }
 
+        function forceRemoteSync() {
+            if(!confirm('هل أنت متأكد أنك تريد إرسال أمر سحابي صامت لإجبار جميع اللابتوبات في الأفرع على ضخ بياناتها اللحظية الآن بلمح البصر؟')) return;
+            
+            db.ref('trigger_sync').set(Date.now().toString()).then(() => {
+                alert('⚡ تم إطلاق شرارة التحديث السحابية بنجاح! ستستجيب حواسيب الفروع المفتوحة بشكل صامت خلال 15 ثانية وتظهر الداتا أمامك.');
+            });
+        }
+
         let db, dataTable;
         let globalBranchesData = {};
 
@@ -221,19 +234,17 @@
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
             db = firebase.database();
 
-            // Setup DataTables with Native Horizontal Scroll (scrollX) and NO Auto-hide collapse
-            // The user requested a horizontal scroll instead of buttons collapsing elements!
             dataTable = $('#inventoryTable').DataTable({
-                scrollX: true,        // Force horizontal scrolling
+                scrollX: true,        
                 scrollCollapse: true,
-                autoWidth: false,     // Let CSS take control
+                autoWidth: false,     
                 pageLength: 25,
                 language: { 
                     url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json",
                     search: "بحث سريع :",
                     lengthMenu: "عرض _MENU_"
                 },
-                order: [[3, "desc"]], // Sort by Qty (Index 3)
+                order: [[3, "desc"]], 
                 dom: '<"flex flex-col md:flex-row justify-between items-center mb-4 gap-2"<"w-full md:w-auto text-sm"f><"w-full md:w-auto text-sm hidden md:block"l>>rt<"flex flex-col md:flex-row justify-between items-center mt-4 text-xs"ip>',
                 columns: [
                     { data: 'Code', className: 'text-right font-mono text-blue-300 font-bold', width: '90px' },
@@ -254,26 +265,37 @@
                         return `<span class="text-green-400 drop-shadow-md">${q}</span>`;
                     }},
                     { data: 'Breakdown', orderable: false, defaultContent: '', width: '250px', render: function(data) {
-                        // Using Flex Wrap to wrap nicely if it overflows 11 branches
                         if (!data) return '<span class="text-slate-500">-</span>';
                         return `<div class="flex flex-wrap gap-1 items-start justify-end pr-2 py-1">${data}</div>`;
                     }}
                 ]
             });
 
-            // Re-adjust columns after tab changes or window resize (DataTables scrollX quirk)
             setInterval(() => {
                 if(dataTable) dataTable.columns.adjust();
             }, 1000);
 
-            // Listen to Firebase
             $('#loading').show();
             db.ref('branches').on('value', (snapshot) => {
                 globalBranchesData = snapshot.val() || {};
                 renderBranchDropdown();
-                switchBranchFromDropdown(); // Auto render
+                switchBranchFromDropdown(); 
                 $('#loading').hide();
             });
+        }
+
+        // --- OFFLINE DETECTION LOGIC ADDED HERE ---
+        function checkIsOffline(lastUpdatedStr) {
+            if (!lastUpdatedStr) return true;
+            try {
+                const parts = lastUpdatedStr.split(' ');
+                if (parts.length === 2) {
+                    const lastDate = new Date(parts[0] + 'T' + parts[1]);
+                    const diffMins = (new Date() - lastDate) / (1000 * 60);
+                    return diffMins > 10;
+                }
+            } catch(e) {}
+            return false;
         }
 
         function renderBranchDropdown() {
@@ -283,14 +305,16 @@
             let html = `<option value="master" class="text-blue-300 font-bold">🌐 الجرد المجمّع لكافة الأفرع المتصلة</option>`;
             
             let count = 0;
-            // Sorting keys so branches appear in some order
             const keys = Object.keys(globalBranchesData).sort();
             
             for(let key of keys) {
                 const b = globalBranchesData[key];
                 const rawName = b.branch_name || key;
                 const cleanName = rawName.includes('?') ? 'فرع الأونلاين' : rawName;
-                const statusIcon = b.status === 'Offline' ? '🔘 متوقف |' : '🟢 متصل |';
+                
+                // Intelligent Offline Calculation
+                const isOffline = checkIsOffline(b.last_updated);
+                const statusIcon = isOffline ? '🔴 متوقف |' : '🟢 متصل |';
                 const lastUp = b.last_updated ? ` (نبضة: ${b.last_updated.split(' ')[1]})` : '';
                 
                 html += `<option value="${key}">${statusIcon} ${cleanName}${lastUp}</option>`;
@@ -301,7 +325,6 @@
             selector.html(html);
             selector.val(currentVal);
             
-            // Failsafe in case currentVal is no longer valid
             if(!selector.val()) selector.val('master');
         }
 
@@ -320,9 +343,8 @@
             $('#view-title').html('<i class="fa-solid fa-globe text-blue-400 ml-2"></i> الجرد المجمّع التراكمي');
             $('#view-subtitle').text('تجميع آلي لجميع الأرصدة المتطابقة من كافة الفروع عبر الرمز.');
 
-            // The user wants Group to ALWAYS show
-            dataTable.columns(2).visible(true); // Show Group
-            dataTable.columns(4).visible(true); // Show Breakdown
+            dataTable.columns(2).visible(true); 
+            dataTable.columns(4).visible(true); 
 
             let masterMap = {};
             
@@ -343,7 +365,6 @@
                     masterMap[c].Qty += q;
                     
                     if(q > 0) {
-                        // Micro capsules perfectly wrapping via Flex
                         masterMap[c].Breakdown += `<div class="bg-slate-700/80 border border-slate-600 rounded px-1.5 py-0.5 text-[10px] flex items-center shrink-0"><span>${cleanName}:</span><span class="text-blue-300 font-bold ml-1 mr-1.5">${q}</span></div>`;
                     }
                 });
@@ -355,7 +376,7 @@
 
         function loadBranchView(branchKey) {
             $('#aggregate-card').hide();
-            $('#status-card').css('display', 'flex'); // Tailwind flex
+            $('#status-card').css('display', 'flex'); 
             
             const branch = globalBranchesData[branchKey];
             if(!branch) return;
@@ -369,17 +390,20 @@
             $('#branch-last-update').text(branch.last_updated || 'غير متوفر');
             
             const badge = $('#branch-status-badge');
-            if(branch.status === 'Offline') {
+            
+            // Offline Status in View
+            const isOffline = checkIsOffline(branch.last_updated);
+            
+            if(isOffline) {
                 badge.removeClass('text-green-400 bg-green-500/10').addClass('text-red-400 bg-red-500/10');
-                badge.html('<i class="fa-solid fa-triangle-exclamation ml-1"></i> جهاز الأونلاين متوقف');
+                badge.html('<i class="fa-solid fa-triangle-exclamation ml-1"></i> متوقف (أغلق الجهاز)');
             } else {
                 badge.removeClass('text-red-400 bg-red-500/10').addClass('text-green-400 bg-green-500/10');
                 badge.html('<i class="fa-solid fa-wifi ml-1"></i> الاتصال المحلي نشط');
             }
 
-            // Mobile Column view for isolated branch: Code, Name, Group.
-            dataTable.columns(2).visible(true); // Show Group (Provenance)
-            dataTable.columns(4).visible(false); // Hide Breakdown (Branches)
+            dataTable.columns(2).visible(true); 
+            dataTable.columns(4).visible(false); 
 
             const items = branch.items || [];
             dataTable.clear().rows.add(items).draw();
