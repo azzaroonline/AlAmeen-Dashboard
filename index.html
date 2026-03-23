@@ -112,8 +112,8 @@
                     </div>
                     
                     <!-- Remote Trigger Button -->
-                    <button onclick="forceRemoteSync()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 transition-colors font-bold text-sm shrink-0 shadow-lg shadow-green-500/10" title="جلب بيانات اللحظة من جميع الأفرع">
-                        <i class="fa-solid fa-bolt"></i> <span class="hidden md:inline">جرد فورّي</span>
+                    <button onclick="forceRemoteSync()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 transition-colors font-bold text-sm shrink-0 shadow-lg shadow-green-500/10" title="أمر سحابي بجلب بيانات اللحظة من الحواسيب">
+                        <i class="fa-solid fa-bolt text-yellow-400"></i> <span class="hidden md:inline">جرد فورّي بإذن الإدارة</span>
                     </button>
                     
                     <button onclick="logout()" class="w-10 h-10 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors shrink-0" title="تسجيل الخروج">
@@ -219,10 +219,10 @@
         }
 
         function forceRemoteSync() {
-            if(!confirm('هل أنت متأكد أنك تريد إرسال أمر سحابي صامت لإجبار جميع اللابتوبات في الأفرع على ضخ بياناتها اللحظية الآن بلمح البصر؟')) return;
+            if(!confirm('أمر إداري (للمدير فقط): سيتم إيقاظ حواسيب الفروع وإجبارها على سحب الجرد الآن، هل أنت متأكد؟')) return;
             
             db.ref('trigger_sync').set(Date.now().toString()).then(() => {
-                alert('⚡ تم إطلاق شرارة التحديث السحابية بنجاح! ستستجيب حواسيب الفروع المفتوحة بشكل صامت خلال 15 ثانية وتظهر الداتا أمامك.');
+                alert('⚡ تم وضع أمر التحديث في السحابة.. ستستجيب أجهزة الفروع وتسحب بياناتها خلال 5 ثواني!');
             });
         }
 
