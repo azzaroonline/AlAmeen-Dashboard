@@ -22,34 +22,22 @@
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        /* DataTables Core Styling */
         div.dataTables_wrapper { width: 100%; margin: 0 auto; }
         table.dataTable { width: 100% !important; margin-top: 10px !important;}
         table.dataTable tbody tr { background-color: transparent !important; border-bottom: 1px solid rgba(51, 65, 85, 0.5); }
         table.dataTable thead th, table.dataTable tfoot th { border-bottom: 2px solid #3b82f6 !important; color: #94a3b8; font-weight: 700; text-align: right !important; padding: 12px 10px;}
         table.dataTable tbody td { padding: 12px 10px; vertical-align: middle; text-align: right !important;}
-        
-        /* DataTables Controls Styling */
         .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_paginate { color: #cbd5e1 !important; }
         .dataTables_wrapper .dataTables_filter input { background-color: #1e293b; color: white; border: 1px solid #475569; border-radius: 6px; padding: 6px 12px; margin-right: 8px; }
         .dataTables_wrapper .dataTables_paginate .paginate_button { color: #cbd5e1 !important; border-color: transparent !important; }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover { background: #3b82f6 !important; color: white !important; border-color: #2563eb !important; border-radius: 6px;}
         table.dataTable tbody tr:hover { background-color: rgba(59, 130, 246, 0.1) !important; transition: background 0.2s;}
-        
-        /* Horizontal Scroll specific adjustments */
         .dataTables_scrollBody::-webkit-scrollbar { height: 8px; width: 8px; }
         .dataTables_scrollBody::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
         .dataTables_scrollBody::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
         .dataTables_scrollBody::-webkit-scrollbar-thumb:hover { background: #2563eb; }
-        
-        /* Auth Screen Background */
         .auth-bg { background-color: #0f172a; background-image: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
-        
-        /* Custom styled select box */
         select option { background: #1e293b; color: white; padding: 10px; }
-        
-        /* Mobile specific fixes */
         @media (max-width: 768px) {
             .dataTables_wrapper .dataTables_filter { display: block !important; margin-bottom: 10px !important; text-align: center !important;}
             .dataTables_wrapper .dataTables_filter input { width: 100% !important; margin: 8px 0 0 0 !important; }
@@ -58,7 +46,6 @@
 </head>
 <body class="min-h-screen flex flex-col relative w-full">
 
-    <!-- Auth Screen -->
     <div id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center auth-bg transition-opacity duration-500">
         <div class="glass p-8 md:p-10 rounded-2xl w-full max-w-sm shadow-2xl border border-blue-500/20 text-center mx-4">
             <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center text-4xl mb-6 shadow-lg shadow-blue-500/50 text-white">
@@ -89,11 +76,11 @@
             <div class="py-3 px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-3">
                 <div class="flex items-center gap-3 w-full md:w-auto">
                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shrink-0">
-                        <i class="fa-solid fa-cubes"></i>
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
                     </div>
                     <div>
                         <h1 class="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-l from-blue-300 to-indigo-400">بانوراما فروع الأمين</h1>
-                        <p class="text-[10px] md:text-xs text-slate-400"><span class="text-green-400 mr-1"><i class="fa-solid fa-circle-dot fa-xs animate-pulse"></i> بث حي</span> التزامن السحابي قيد العمل</p>
+                        <p class="text-[10px] md:text-xs text-slate-400"><span class="text-blue-400 mr-1"><i class="fa-solid fa-leaf fa-xs"></i> اقتصاد الباقة</span> وضع توفير البيانات نشط</p>
                     </div>
                 </div>
                 
@@ -110,6 +97,11 @@
                             <i class="fa-solid fa-chevron-down text-xs"></i>
                         </div>
                     </div>
+                    
+                    <!-- Fetch Current Data Button -->
+                    <button onclick="fetchDashboardData()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-colors font-bold text-sm shrink-0 shadow-lg shadow-blue-500/10" title="تحديث الشاشة بالأرصدة المعلقة في السحابة">
+                        <i class="fa-solid fa-arrows-rotate"></i> <span class="hidden md:inline">جلب الأرصدة الحالية</span>
+                    </button>
                     
                     <!-- Remote Trigger Button -->
                     <button onclick="forceRemoteSync()" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 transition-colors font-bold text-sm shrink-0 shadow-lg shadow-green-500/10" title="أمر سحابي بجلب بيانات اللحظة من الحواسيب">
@@ -132,19 +124,17 @@
                     <p id="view-subtitle" class="text-slate-400 text-[11px] md:text-sm">...</p>
                 </div>
                 
-                <!-- Individual Branch Info -->
                 <div id="status-card" class="w-full md:w-auto text-center rounded-lg border border-slate-700/50 bg-slate-800/80 px-4 py-3 shadow-inner hidden flex gap-4 md:flex-col md:gap-1 items-center justify-around">
                     <div>
-                        <div class="text-[10px] md:text-xs text-slate-400 mb-1">آخر تحديث من الجهاز المحلي</div>
+                        <div class="text-[10px] md:text-xs text-slate-400 mb-1">آخر سحب من السحابة تم في الساعة</div>
                         <div id="branch-last-update" class="text-xs md:text-sm font-mono text-white">...</div>
                     </div>
                     <div id="branch-status-badge" class="font-bold text-xs px-3 py-1 rounded text-green-400 bg-green-500/10"><i class="fa-solid fa-wifi"></i> متصل</div>
                 </div>
                 
-                <!-- Master View Info -->
                 <div id="aggregate-card" class="w-full md:w-auto text-center rounded-lg border border-blue-500/30 bg-blue-900/20 px-6 py-3 shadow-inner hidden flex gap-6 items-center justify-center">
                     <div>
-                        <div class="text-[10px] md:text-xs text-blue-300 font-bold mb-1">عدد الفروع المرتبطة بالشبكة</div>
+                        <div class="text-[10px] md:text-xs text-blue-300 font-bold mb-1">عدد الفروع في قاعدة البيانات</div>
                         <div class="text-3xl md:text-4xl font-black text-white" id="active-branches-count">0</div>
                     </div>
                 </div>
@@ -157,7 +147,6 @@
                     <div class="text-blue-500 text-3xl animate-spin"><i class="fa-solid fa-spinner"></i></div>
                 </div>
                 
-                <!-- Notice table uses 100% width and wrapper will handle scroll -->
                 <table id="inventoryTable" class="display nowrap text-xs md:text-sm text-right" style="width:100%">
                     <thead>
                         <tr class="bg-slate-800/50">
@@ -179,8 +168,6 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    
-    <!-- Firebase SDK (v8 compat) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -198,7 +185,6 @@
             const u = $('#username').val();
             const p = $('#password').val();
             
-            // Allow admin/1234 or just 1234
             if((u === 'admin' && p === '1234') || p === '1234') {
                 localStorage.setItem('ameen_auth', 'true');
                 $('#auth-screen').css('opacity', '0');
@@ -222,7 +208,12 @@
             if(!confirm('أمر إداري (للمدير فقط): سيتم إيقاظ حواسيب الفروع وإجبارها على سحب الجرد الآن، هل أنت متأكد؟')) return;
             
             db.ref('trigger_sync').set(Date.now().toString()).then(() => {
-                alert('⚡ تم وضع أمر التحديث في السحابة.. ستستجيب أجهزة الفروع وتسحب بياناتها خلال 5 ثواني!');
+                alert('⚡ تم إرسال أمر التحديث السحابي! سيقوم الموقع بسحب البيانات الجديدة لك تلقائياً بعد 8 ثواني تقريباً لترى النتيجة!');
+                
+                // ذكاء اصطناعي لراحتك: تسحب الداتا أوتماتيكياً بعد إرسال الأمر بـ 8 ثواني بلا عناء!
+                setTimeout(() => {
+                    fetchDashboardData();
+                }, 8000);
             });
         }
 
@@ -273,18 +264,35 @@
 
             setInterval(() => {
                 if(dataTable) dataTable.columns.adjust();
+                
+                // الخوارزمية الذكية: تقوم باكتشاف الإغلاق وتلوين الحالة بالأحمر استناداً لساعة هاتفك بدون أن تسحب بايت واحد من الأنترنت!
+                if ($('#branch-selector').val() && $('#branch-selector').val() !== 'master') {
+                    const branch = globalBranchesData[$('#branch-selector').val()];
+                    if (branch) {
+                        updateBadgeVisuals(branch.last_updated);
+                    }
+                }
             }, 1000);
 
+            // Fetch Dashboard Data ONLY ONCE on Load - (Bandwidth Saver ON)
+            fetchDashboardData();
+        }
+
+        function fetchDashboardData() {
             $('#loading').show();
-            db.ref('branches').on('value', (snapshot) => {
+            // استخدام "once" بدلاً من "on" هو سر الحماية المطلقة للباقة
+            db.ref('branches').once('value').then((snapshot) => {
                 globalBranchesData = snapshot.val() || {};
                 renderBranchDropdown();
                 switchBranchFromDropdown(); 
                 $('#loading').hide();
+            }).catch(e => {
+                $('#loading').hide();
+                console.error("خطأ في الاتصال بالسحابة", e);
             });
         }
 
-        // --- OFFLINE DETECTION LOGIC ADDED HERE ---
+        // --- OFFLINE DETECTION LOGIC ---
         function checkIsOffline(lastUpdatedStr) {
             if (!lastUpdatedStr) return true;
             try {
@@ -296,6 +304,23 @@
                 }
             } catch(e) {}
             return false;
+        }
+
+        function updateBadgeVisuals(lastUpdatedStr) {
+            const badge = $('#branch-status-badge');
+            const isOffline = checkIsOffline(lastUpdatedStr);
+            
+            if(isOffline) {
+                if(!badge.hasClass('bg-red-500/10')) {
+                    badge.removeClass('text-green-400 bg-green-500/10').addClass('text-red-400 bg-red-500/10');
+                    badge.html('<i class="fa-solid fa-triangle-exclamation ml-1"></i> متوقف (لا يوجد تحديث منذ 10 دقائق)');
+                }
+            } else {
+                if(!badge.hasClass('bg-green-500/10')) {
+                    badge.removeClass('text-red-400 bg-red-500/10').addClass('text-green-400 bg-green-500/10');
+                    badge.html('<i class="fa-solid fa-wifi ml-1"></i> الاتصال المحلي نشط ومفتوح');
+                }
+            }
         }
 
         function renderBranchDropdown() {
@@ -312,10 +337,9 @@
                 const rawName = b.branch_name || key;
                 const cleanName = rawName.includes('?') ? 'فرع الأونلاين' : rawName;
                 
-                // Intelligent Offline Calculation
                 const isOffline = checkIsOffline(b.last_updated);
                 const statusIcon = isOffline ? '🔴 متوقف |' : '🟢 متصل |';
-                const lastUp = b.last_updated ? ` (نبضة: ${b.last_updated.split(' ')[1]})` : '';
+                const lastUp = b.last_updated ? ` (آخر سحبة: ${b.last_updated.split(' ')[1]})` : '';
                 
                 html += `<option value="${key}">${statusIcon} ${cleanName}${lastUp}</option>`;
                 count++;
@@ -341,7 +365,7 @@
             $('#status-card').hide();
             $('#aggregate-card').show();
             $('#view-title').html('<i class="fa-solid fa-globe text-blue-400 ml-2"></i> الجرد المجمّع التراكمي');
-            $('#view-subtitle').text('تجميع آلي لجميع الأرصدة المتطابقة من كافة الفروع عبر الرمز.');
+            $('#view-subtitle').text('تحديث مقتصد للداتا عبر السحابة لجميع الفروع.');
 
             dataTable.columns(2).visible(true); 
             dataTable.columns(4).visible(true); 
@@ -385,22 +409,12 @@
             const finalName = name.includes('?') ? 'فرع الأونلاين' : name;
             
             $('#view-title').html(`<i class="fa-solid fa-store text-indigo-400 ml-2"></i> ${finalName}`);
-            $('#view-subtitle').text('تقرير الجرد المعزول للفرع المستقل فقط.');
+            $('#view-subtitle').text('سحب فوري دقيق لجرد الفرع المستقل.');
             
             $('#branch-last-update').text(branch.last_updated || 'غير متوفر');
             
-            const badge = $('#branch-status-badge');
-            
-            // Offline Status in View
-            const isOffline = checkIsOffline(branch.last_updated);
-            
-            if(isOffline) {
-                badge.removeClass('text-green-400 bg-green-500/10').addClass('text-red-400 bg-red-500/10');
-                badge.html('<i class="fa-solid fa-triangle-exclamation ml-1"></i> متوقف (أغلق الجهاز)');
-            } else {
-                badge.removeClass('text-red-400 bg-red-500/10').addClass('text-green-400 bg-green-500/10');
-                badge.html('<i class="fa-solid fa-wifi ml-1"></i> الاتصال المحلي نشط');
-            }
+            // Initial call to set visual badge perfectly
+            updateBadgeVisuals(branch.last_updated);
 
             dataTable.columns(2).visible(true); 
             dataTable.columns(4).visible(false); 
